@@ -53,12 +53,12 @@ jobs:
 
               DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
 
+
               PG_DB_USERNAME=${{ secrets.PG_DB_USERNAME }}
 
               PG_DB_PASSWORD=${{ secrets.PG_DB_PASSWORD }}
 
               PG_DB_NAME=${{ secrets.PG_DB_NAME }}
-
               PORT=3000
               EOF
 
