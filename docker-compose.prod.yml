@@ -1,0 +1,12 @@
+services:
+  app:
+    image: ${DOCKER_USERNAME}/bank-api:latest
+    container_name: bank-api
+    restart: always
+    ports:
+      - "${VPS_PORT:-3000}:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+
+

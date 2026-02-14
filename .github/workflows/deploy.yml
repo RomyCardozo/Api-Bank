@@ -1,0 +1,73 @@
+name: Flujo de despliegue para API Bank 
+
+on: 
+  push: 
+    branches: ["main"]
+
+env: 
+  APP_NAME: api-bank
+
+jobs: 
+  build-y-despliegue: 
+    name: flujo de despliegue
+    runs-on: ubuntu-latest 
+    if: github.ref == 'refs/heads/main'
+    steps: 
+      - name: Descargar código fuente (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Iniciar sesión en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Construir y subir imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Usa el directorio actual como contexto
+          push: true # Sube la imagen al registro después de construirla
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:latest
+        
+      - name: Desplegar en Servidor VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}       # Dirección IP del servidor
+          username: ${{ secrets.VPS_USERNAME }} # Usuario SSH (ej. root)
+          key: ${{ secrets.VPS_SSH_KEY }}     # Clave privada SSH
+          port: ${{ secrets.VPS_PORT }}       # Puerto SSH (por defecto 22)
+          script: |
+              # --- INICIO DEL SCRIPT DE DESPLIEGUE EN EL SERVIDOR ---
+            
+              # 1. Preparar directorio de la aplicación
+              # Crea la carpeta si no existe y entra en ella
+              mkdir -p /opt/${{ env.APP_NAME }}
+              cd /opt/${{ env.APP_NAME }}
+              
+              # 2. Crear archivo de variables de entorno (.env)
+              # Generamos el archivo .env dinámicamente con los secretos de GitHub.
+              # Esto es seguro porque el archivo solo vive en el servidor.
+              
+              echo "Generando archivo .env..."
+              cat > .env << EOF
+
+              DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+
+              PG_DB_USERNAME=${{ secrets.PG_DB_USERNAME }}
+
+              PG_DB_PASSWORD=${{ secrets.PG_DB_PASSWORD }}
+
+              PG_DB_NAME=${{ secrets.PG_DB_NAME }}
+
+              PORT=3000
+              EOF
+
+              # Descarga la nueva imagen y reinicia los servicios
+              echo "Desplegando nueva versión..."
+              docker compose -f docker-compose.prod.yml pull
+              docker compose -f docker-compose.prod.yml down
+              docker compose -f docker-compose.prod.yml up -d
+
+              # Elimina imágenes antiguas para liberar espacio en disco
+              echo "Limpiando imágenes antiguas..."
+              docker image prune -f
