@@ -1,1 +1,19 @@
---localmente
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: bank-api-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${PG_DB_USERNAME}
+      POSTGRES_PASSWORD: ${PG_DB_PASSWORD}
+      POSTGRES_DB: ${PG_DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+volumes:
+  postgres_data:
+
+#localmente

@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model clientes {
+  id         Int      @id @default(autoincrement())
+  nombre     String   @db.VarChar(100)
+  email      String   @db.VarChar(100)
+  created_at DateTime @default(now()) @db.Timestamp()
+  
+  cuentas    cuentas[]
+}
+
+model tipos_cuenta {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @db.VarChar(50)
+  descripcion String?  @db.VarChar(150)
+  
+  cuentas     cuentas[]
+}
+
+model cuentas {
+  id              BigInt   @id @default(autoincrement())
+  cliente_id      Int
+  tipo_cuenta_id  Int
+  numero_cuenta   String   @db.VarChar(20)
+  saldo           Decimal  @db.Decimal(15, 2)
+  created_at      DateTime @default(now()) @db.Timestamp()
+  
+  cliente         clientes      @relation(fields: [cliente_id], references: [id])
+  tipo_cuenta     tipos_cuenta  @relation(fields: [tipo_cuenta_id], references: [id])
+  
+  transferencias_origen  transferencias[] @relation("CuentaOrigen")
+  transferencias_destino transferencias[] @relation("CuentaDestino")
+  transacciones          transacciones[]
+}
+
+model transferencias {
+  id                 BigInt   @id @default(autoincrement())
+  cuenta_origen_id   BigInt
+  cuenta_destino_id  BigInt
+  monto              Decimal  @db.Decimal(15, 2)
+  fecha              DateTime @default(now()) @db.Timestamp()
+  
+  cuenta_origen      cuentas  @relation("CuentaOrigen", fields: [cuenta_origen_id], references: [id])
+  cuenta_destino     cuentas  @relation("CuentaDestino", fields: [cuenta_destino_id], references: [id])
+}
+
+model transacciones {
+  id         BigInt   @id @default(autoincrement())
+  cuenta_id  BigInt
+  tipo       String   @db.VarChar(30)
+  monto      Decimal  @db.Decimal(15, 2)
+  fecha      DateTime @default(now()) @db.Timestamp()
+  
+  cuenta     cuentas  @relation(fields: [cuenta_id], references: [id])
+}
+
