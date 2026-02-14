@@ -62,11 +62,29 @@ jobs:
               PORT=3000
               EOF
 
-              # Descarga la nueva imagen y reinicia los servicios
+              # 3. Crear archivo docker-compose.prod.yml
+              # Definimos la infraestructura necesaria (App + Base de Datos)
+              # Usamos la imagen que acabamos de subir a Docker Hub.
+              echo "Generando docker-compose.prod.yml..."
+              cat > docker-compose.prod.yml << 'DOCKERCOMPOSE'
+              version: '3.8'
+
+              services:
+                app:
+                  container_name: bank-api
+                  # Usa la imagen más reciente
+                  image: ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:latest
+                  restart: always
+                  ports:
+                    - "3000:3000" # Expone el puerto 3000
+                  env_file: .env # Lee las variables generadas arriba
+
+              #3 Descarga la nueva imagen y reinicia los servicios
               echo "Desplegando nueva versión..."
               docker compose -f docker-compose.prod.yml pull
               docker compose -f docker-compose.prod.yml down
               docker compose -f docker-compose.prod.yml up -d
+
 
               # Elimina imágenes antiguas para liberar espacio en disco
               echo "Limpiando imágenes antiguas..."
