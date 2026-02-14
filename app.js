@@ -10,6 +10,13 @@ app.get("/api/v1/health-check", (req, res) => {
 })
 })
 
+app.get("/api/v1/mensaje", (req, res) => {
+    res.json({
+        name: "Romy",
+        lastName: "Cardozo"
+    })
+})
+
 app.get("/api/v1/saludar", (req, res) => {
     res.send("Holi");
 })
