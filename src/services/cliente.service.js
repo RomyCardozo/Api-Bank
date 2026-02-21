@@ -7,6 +7,21 @@ const crearCliente = async (cliente) => {
     return nuevoCliente;
 }
 
+const obtenerClientes = async () => {
+    const clientes = await prisma.clientes.findMany();
+    return clientes;
+}
+
+// Obtener cliente por ID where id = 1 
+const obtenerClientePorId = async (id) => {
+    const cliente = await prisma.clientes.findUnique({
+        where: { id }
+    });
+    return cliente;
+}
+
 module.exports = {
-    crearCliente
+    crearCliente,
+    obtenerClientes,
+    obtenerClientePorId
 }

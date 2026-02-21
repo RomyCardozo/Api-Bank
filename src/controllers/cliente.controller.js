@@ -12,6 +12,39 @@ const crearCliente = async (req, res) => {
     }
 }
 
+
+const obtenerClientes = async (req, res) => {
+    try {
+        const clientes = await clienteService.obtenerClientes();    
+        res.status(STATUS.OK).json(clientes);
+    } catch (error) {
+        res.status(STATUS.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+}
+
+const obtenerClientePorId = async (req, res) => {
+    try {
+        const { id } = req.params;  
+        const cliente = await clienteService.obtenerClientePorId(Number(id));  
+        if (!cliente) {
+            return res.status(STATUS.NOT_FOUND).json({ error: "Cliente no encontrado" });
+        }
+        res.status(STATUS.OK).json(cliente);
+    } catch (error) {
+        res.status(STATUS.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+}
+
+/**
+* Routes rutas a controllers.
+Controller * Recibir y responder peticiones
+* Lógica de negocio Service
+* Capa de Acceso a Datos Repository
+* 
+*/
+
 module.exports = {
-    crearCliente
+    crearCliente,
+    obtenerClientes,
+    obtenerClientePorId
 }
